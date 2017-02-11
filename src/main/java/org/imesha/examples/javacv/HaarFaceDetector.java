@@ -33,7 +33,7 @@ public class HaarFaceDetector {
         toMatConverter = new OpenCVFrameConverter.ToMat();
 
         try {
-            File haarCascade = new File(this.getClass().getResource("haarcascade_frontalface_alt.xml").toURI());
+            File haarCascade = new File(this.getClass().getResource("/detection/haarcascade_frontalface_alt.xml").toURI());
             logger.debug("Using Haar Cascade file located at : {}", haarCascade.getAbsolutePath());
             haarClassifierCascade = new opencv_objdetect.CvHaarClassifierCascade(cvLoad(haarCascade.getAbsolutePath()));
         } catch (Exception e) {
