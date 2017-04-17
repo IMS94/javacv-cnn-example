@@ -47,7 +47,6 @@ public class CNNGenderDetector {
      * @return Gender
      */
     public Gender predictGender(Mat face, Frame frame) {
-        Map<Mat, Gender> genderMap = new HashMap<>();
         try {
             Mat croppedMat = new Mat();
             resize(face, croppedMat, new Size(256, 256));
