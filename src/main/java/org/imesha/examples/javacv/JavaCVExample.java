@@ -71,8 +71,8 @@ public class JavaCVExample {
             frameGrabber.start();
             logger.debug("Started frame grabber with image width-height : {}-{}", frameGrabber.getImageWidth(), frameGrabber.getImageHeight());
         } catch (FrameGrabber.Exception e) {
-            logger.error("Error when initializing the frame grabber");
-            throw new RuntimeException("Unable to start the FrameGrabber");
+            logger.error("Error when initializing the frame grabber", e);
+            throw new RuntimeException("Unable to start the FrameGrabber", e);
         }
 
         SwingUtilities.invokeLater(() -> {
