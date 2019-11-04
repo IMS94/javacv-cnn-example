@@ -2,15 +2,20 @@ package org.imesha.examples.javacv;
 
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacv.Frame;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.Point;
+import org.bytedeco.opencv.opencv_core.Size;
+import org.bytedeco.opencv.opencv_dnn.Net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URISyntaxException;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_dnn.*;
-import static org.bytedeco.javacpp.opencv_imgproc.resize;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_dnn.blobFromImage;
+import static org.bytedeco.opencv.global.opencv_dnn.readNetFromCaffe;
+import static org.bytedeco.opencv.global.opencv_imgproc.resize;
 
 /**
  * Age predictor using Convolution Neural Networks
@@ -31,9 +36,7 @@ public class CNNAgeDetector {
             File protobuf = new File(getClass().getResource("/caffe/deploy_agenet.prototxt").toURI());
             File caffeModel = new File(getClass().getResource("/caffe/age_net.caffemodel").toURI());
 
-            Importer importer = createCaffeImporter(protobuf.getAbsolutePath(), caffeModel.getAbsolutePath());
-            importer.populateNet(ageNet);
-            importer.close();
+            ageNet = readNetFromCaffe(protobuf.getAbsolutePath(), caffeModel.getAbsolutePath());
         } catch (URISyntaxException e) {
             logger.error("Unable to load the caffe model", e);
             throw new IllegalStateException("Unable to load the caffe model", e);
@@ -54,14 +57,14 @@ public class CNNAgeDetector {
             resize(face, resizedMat, new Size(256, 256));
             normalize(resizedMat, resizedMat, 0, Math.pow(2, frame.imageDepth), NORM_MINMAX, -1, null);
 
-            Blob inputBlob = new Blob(resizedMat);
-            ageNet.setBlob(".data", inputBlob);
-            ageNet.forward();
-            Blob prob = ageNet.getBlob("prob");
+            Mat inputBlob = blobFromImage(resizedMat);
+            ageNet.setInput(inputBlob, "data", 1.0, null);      //set the network input
+
+            Mat prob = ageNet.forward("prob");
 
             DoublePointer pointer = new DoublePointer(new double[1]);
             Point max = new Point();
-            minMaxLoc(prob.matRefConst(), null, pointer, null, max, null);
+            minMaxLoc(prob, null, pointer, null, max, null);
             return AGES[max.x()];
         } catch (Exception e) {
             logger.error("Error when processing gender", e);

@@ -1,11 +1,13 @@
 package org.imesha.examples.javacv;
 
-import org.bytedeco.javacpp.opencv_core.CvRect;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.Point;
+import org.bytedeco.opencv.opencv_core.Rect;
+import org.bytedeco.opencv.opencv_core.Scalar;
 import org.imesha.examples.javacv.util.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +19,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
-import static org.bytedeco.javacpp.opencv_core.Point;
-import static org.bytedeco.javacpp.opencv_core.Scalar;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  * An example to demonstrate JavaCV's frame grabbing and other features
@@ -30,7 +30,7 @@ public class JavaCVExample {
 
     private static final Logger logger = LoggerFactory.getLogger(JavaCVExample.class);
 
-    private FFmpegFrameGrabber frameGrabber;
+    private FrameGrabber frameGrabber;
     private OpenCVFrameConverter.ToMat toMatConverter = new OpenCVFrameConverter.ToMat();
     private volatile boolean running = false;
 
@@ -61,8 +61,13 @@ public class JavaCVExample {
      * {@link #videoPanel}
      */
     public void start() {
-        frameGrabber = new FFmpegFrameGrabber("/dev/video0");
-        frameGrabber.setFormat("video4linux2");
+       // frameGrabber = new FFmpegFrameGrabber("/dev/video0");
+        // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
+        // DC1394FrameGrabber, FlyCapture2FrameGrabber, OpenKinectFrameGrabber,
+        // PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
+        frameGrabber = new OpenCVFrameGrabber(0);
+
+        //frameGrabber.setFormat("mp4");
         frameGrabber.setImageWidth(1280);
         frameGrabber.setImageHeight(720);
 
@@ -94,13 +99,12 @@ public class JavaCVExample {
                 // Here we grab frames from our camera
                 final Frame frame = frameGrabber.grab();
 
-                Map<CvRect, Mat> detectedFaces = faceDetector.detect(frame);
+                Map<Rect, Mat> detectedFaces = faceDetector.detect(frame);
                 Mat mat = toMatConverter.convert(frame);
 
                 detectedFaces.entrySet().forEach(rectMatEntry -> {
                     String age = ageDetector.predictAge(rectMatEntry.getValue(), frame);
                     CNNGenderDetector.Gender gender = genderDetector.predictGender(rectMatEntry.getValue(), frame);
-
                     String caption = String.format("%s:[%s]", gender, age);
                     logger.debug("Face's caption : {}", caption);
 
