@@ -11,8 +11,8 @@
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
-            <artifactId>javacv</artifactId>
-            <version>1.2</version>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
